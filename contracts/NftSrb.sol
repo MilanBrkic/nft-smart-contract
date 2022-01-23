@@ -3,13 +3,15 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract NftSrb is ERC721{
+contract NftSrb is ERC721URIStorage{
     constructor() ERC721("NftSrbija", "NFTSRB") {}
     uint256 public _counter = 0;
 
-    function mint(bytes memory data) public{
-        _safeMint(msg.sender, _counter++, data);
+    function mint(string memory tokenURI) public{
+        _safeMint(msg.sender, _counter);
+        _setTokenURI(_counter, tokenURI);
+        _counter++;
     }
 }
