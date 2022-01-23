@@ -1,5 +1,7 @@
-const { assert } = require("chai");
+const chai = require("chai");
 const { ethers } = require("hardhat");
+chai.use(require('chai-as-promised'));
+const {assert, expect} = chai;
 
 describe("Nft Srbija", function () {
   let NftSrb;
@@ -19,36 +21,45 @@ describe("Nft Srbija", function () {
 
     deployedAddress = nftsrb.address;
   })
-  
-  it("Should mint a token", async () => {
-    const tokenUri = 'www.SomeTokenUrl.com';
-    const mintedToken = await nftsrb.mint(tokenUri);
-    const balance  = await nftsrb.balanceOf(signerAddress);
-    assert.equal(balance, 1);
-    const receivedTokenUri = await nftsrb.tokenURI(0);
 
-    assert.equal(mintedToken.from, signerAddress);
-    assert.equal(mintedToken.to, deployedAddress);
-    assert.equal(receivedTokenUri, tokenUri);
-  });
-
-  it("Should mint three tokens", async()=>{
-    const tokenURIS = [
-                      `www.${Math.floor(Math.random()*10000)}.com`,
-                      `www.${Math.floor(Math.random()*10000)}.com`,
-                      `www.${Math.floor(Math.random()*10000)}.com`
-                    ]
-    for(const tokenURI of tokenURIS){
-      await nftsrb.mint(tokenURI);
-    }
-
-    const balance  = await nftsrb.balanceOf(signerAddress);
-    
-    for(let i = 0;i < tokenURIS.length;i++){
-      const ownerAddress = await nftsrb.ownerOf(i);
-      assert.equal(signerAddress, ownerAddress);
-    }
-
-    assert.equal(balance, tokenURIS.length);
+  it("Should fail for tokenId that does not exist", async ()=>{
+    await expect(nftsrb.tokenURI(0)).to.be.rejectedWith(); 
   })
+
+  describe("Minting process", ()=>{
+
+    it("Should mint a token", async () => {
+      const tokenUri = 'www.SomeTokenUrl.com';
+      const mintedToken = await nftsrb.mint(tokenUri);
+      const balance  = await nftsrb.balanceOf(signerAddress);
+      assert.equal(balance, 1);
+      const receivedTokenUri = await nftsrb.tokenURI(0);
+  
+      assert.equal(mintedToken.from, signerAddress);
+      assert.equal(mintedToken.to, deployedAddress);
+      assert.equal(receivedTokenUri, tokenUri);
+    });
+  
+    it("Should mint three tokens", async()=>{
+      const tokenURIS = [
+                        `www.${Math.floor(Math.random()*10000)}.com`,
+                        `www.${Math.floor(Math.random()*10000)}.com`,
+                        `www.${Math.floor(Math.random()*10000)}.com`
+                      ]
+      for(const tokenURI of tokenURIS){
+        await nftsrb.mint(tokenURI);
+      }
+  
+      const balance  = await nftsrb.balanceOf(signerAddress);
+      
+      for(let i = 0;i < tokenURIS.length;i++){
+        const ownerAddress = await nftsrb.ownerOf(i);
+        assert.equal(signerAddress, ownerAddress);
+      }
+  
+      assert.equal(balance, tokenURIS.length);
+    })
+  })
+  
+
 });
