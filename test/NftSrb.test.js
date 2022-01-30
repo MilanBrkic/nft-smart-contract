@@ -62,30 +62,32 @@ describe('Nft Srbija', function () {
         });
     });
 
-    it('Should return a correct array of token ids', async () => {
-        await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(betaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(gamaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(gamaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-        await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+    describe('getAllByAddress tests', () => {
+        it('Should return a correct array of token ids', async () => {
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(betaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(gamaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(gamaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
 
-        const [alfaIds, betaIds, gamaIds] = await Promise.all([
-            await nftsrb.getAllByAddress(alfaSigner.address),
-            await nftsrb.getAllByAddress(betaSigner.address),
-            await nftsrb.getAllByAddress(gamaSigner.address),
-        ]);
+            const [alfaIds, betaIds, gamaIds] = await Promise.all([
+                await nftsrb.getAllByAddress(alfaSigner.address),
+                await nftsrb.getAllByAddress(betaSigner.address),
+                await nftsrb.getAllByAddress(gamaSigner.address),
+            ]);
 
-        assert.equal(alfaIds.length, 4);
-        assert.equal(alfaIds[0], 0);
-        assert.equal(alfaIds[1], 1);
-        assert.equal(alfaIds[2], 3);
-        assert.equal(alfaIds[3], 6);
-        assert.equal(betaIds.length, 1);
-        assert.equal(betaIds[0], 2);
-        assert.equal(gamaIds.length, 2);
-        assert.equal(gamaIds[0], 4);
-        assert.equal(gamaIds[1], 5);
+            assert.equal(alfaIds.length, 4);
+            assert.equal(alfaIds[0], 0);
+            assert.equal(alfaIds[1], 1);
+            assert.equal(alfaIds[2], 3);
+            assert.equal(alfaIds[3], 6);
+            assert.equal(betaIds.length, 1);
+            assert.equal(betaIds[0], 2);
+            assert.equal(gamaIds.length, 2);
+            assert.equal(gamaIds[0], 4);
+            assert.equal(gamaIds[1], 5);
+        });
     });
 });
