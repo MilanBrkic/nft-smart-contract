@@ -62,6 +62,39 @@ describe('Nft Srbija', function () {
         });
     });
 
+    describe('transferFrom tests', () => {
+        it('Should fail when transfering a token that a wallet does not posses', async () => {
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            const promise = nftsrb
+                .connect(alfaSigner)
+                .transferFrom(alfaSigner.address, betaSigner.address, 1);
+            await expect(promise).to.be.rejectedWith();
+        });
+
+        it('Should fail when signer does not posses the from address', async () => {
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            const promise = nftsrb
+                .connect(betaSigner)
+                .transferFrom(alfaSigner.address, betaSigner.address, 0);
+            await expect(promise).to.be.rejectedWith();
+        });
+
+        it('Should send token successfully', async () => {
+            await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+            await nftsrb
+                .connect(alfaSigner)
+                .transferFrom(alfaSigner.address, betaSigner.address, 0);
+
+            const numbeOfAlfaTokens = await nftsrb.balanceOf(alfaSigner.address);
+            const numbeOfBetaTokens = await nftsrb.balanceOf(betaSigner.address);
+            const ownerOfToken = await nftsrb.ownerOf(0);
+
+            assert.equal(numbeOfAlfaTokens, 0);
+            assert.equal(numbeOfBetaTokens, 1);
+            assert.equal(betaSigner.address, ownerOfToken);
+        });
+    });
+
     describe('getAllByAddress tests', () => {
         it('Should return a correct array of token ids', async () => {
             await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
