@@ -13,3 +13,17 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+# To start the project on local env
+
+First install the node modules:
+``` 
+npm ci
+```
+Next:
+```
+npx hardhat node
+```
+Lastly, deploy the smart contract
+```
+node scripts/deploy.js
+```
