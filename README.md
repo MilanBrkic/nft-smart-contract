@@ -29,5 +29,5 @@ npx hardhat compile
 ```
 Lastly, deploy the smart contract:
 ```
-node scripts/deploy.js
+npx hardhat run --network localhost scripts/deploy.js
 ```
