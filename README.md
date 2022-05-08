@@ -23,7 +23,11 @@ Next:
 ```
 npx hardhat node
 ```
-Lastly, deploy the smart contract
+Compile:
+```
+npx hardhat compile
+```
+Lastly, deploy the smart contract:
 ```
 node scripts/deploy.js
 ```
