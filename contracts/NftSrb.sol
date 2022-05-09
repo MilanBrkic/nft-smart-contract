@@ -18,12 +18,12 @@ contract NftSrb is ERC721URIStorage {
         emit Mint(counter++, msg.sender);
     }
 
-    function getAllByAddress(address userAddress) public view returns (uint256[] memory) {
-        uint256 numberOfTokens = balanceOf(userAddress);
+    function getAllByAddress() public view returns (uint256[] memory) {
+        uint256 numberOfTokens = balanceOf(msg.sender);
         uint256[] memory userTokens = new uint256[](numberOfTokens);
         uint256 userCounter = 0;
         for (uint256 i = 0; i < counter; i++) {
-            if (owners[i] == userAddress) {
+            if (owners[i] == msg.sender) {
                 userTokens[userCounter++] = i;
             }
         }

@@ -106,9 +106,9 @@ describe('Nft Srbija', function () {
             await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
 
             const [alfaIds, betaIds, gamaIds] = await Promise.all([
-                await nftsrb.getAllByAddress(alfaSigner.address),
-                await nftsrb.getAllByAddress(betaSigner.address),
-                await nftsrb.getAllByAddress(gamaSigner.address),
+                await nftsrb.connect(alfaSigner).getAllByAddress(),
+                await nftsrb.connect(betaSigner).getAllByAddress(),
+                await nftsrb.connect(gamaSigner).getAllByAddress(),
             ]);
 
             assert.equal(alfaIds.length, 4);
