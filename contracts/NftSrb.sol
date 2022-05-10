@@ -4,9 +4,12 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
 
 contract NftSrb is ERC721URIStorage {
-    constructor() ERC721('NftSrbija', 'NFTSRB') {}
+    constructor() ERC721('NftSrbija', 'NFTSRB') {
+        contractOwner = msg.sender;
+    }
 
     uint256 public counter = 0;
+    address contractOwner;
     mapping(uint256 => address) public owners;
 
     event Mint(uint256 _tokenId, address minter);
@@ -14,8 +17,17 @@ contract NftSrb is ERC721URIStorage {
     function mint(string memory tokenURI) public {
         _safeMint(msg.sender, counter);
         _setTokenURI(counter, tokenURI);
+        if (msg.sender != contractOwner) {
+            approve(contractOwner, counter);
+        }
         owners[counter] = msg.sender;
         emit Mint(counter++, msg.sender);
+    }
+
+    function transfer(address to, uint256 tokenId) public {
+        address from = ownerOf(tokenId);
+        transferFrom(from, to, tokenId);
+        owners[tokenId] = to;
     }
 
     function getAllByAddress() public view returns (uint256[] memory) {

@@ -7,17 +7,18 @@ describe('Nft Srbija', function () {
   let NftSrb;
   let nftsrb;
   let accounts;
-  let signerAddress;
+  let deployedAddress
   let alfaSigner;
   let betaSigner;
   let gamaSigner;
+  let contractOwner;
 
   beforeEach(async () => {
     accounts = await ethers.getSigners();
-    [alfaSigner, betaSigner, gamaSigner] = [accounts[0], accounts[1], accounts[2]];
-    signerAddress = alfaSigner.address;
+    contractOwner = accounts[0];
+    [alfaSigner, betaSigner, gamaSigner] = [accounts[1], accounts[2], accounts[3]];
 
-    NftSrb = await ethers.getContractFactory('NftSrb', alfaSigner);
+    NftSrb = await ethers.getContractFactory('NftSrb', contractOwner);
     nftsrb = await NftSrb.deploy();
     await nftsrb.deployed();
 
@@ -31,12 +32,12 @@ describe('Nft Srbija', function () {
   describe('Minting process', () => {
     it('Should mint a token', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
-      const mintedToken = await nftsrb.mint(tokenUri);
-      const balance = await nftsrb.balanceOf(signerAddress);
+      const mintedToken = await nftsrb.connect(alfaSigner).mint(tokenUri);
+      const balance = await nftsrb.balanceOf(alfaSigner.address);
       assert.equal(balance, 1);
       const receivedTokenUri = await nftsrb.tokenURI(0);
 
-      assert.equal(mintedToken.from, signerAddress);
+      assert.equal(mintedToken.from, alfaSigner.address);
       assert.equal(mintedToken.to, deployedAddress);
       assert.equal(receivedTokenUri, tokenUri);
     });
@@ -48,14 +49,14 @@ describe('Nft Srbija', function () {
         `www.${Math.floor(Math.random() * 10000)}.com`
       ];
       for (const tokenURI of tokenURIS) {
-        await nftsrb.mint(tokenURI);
+        await nftsrb.connect(alfaSigner).mint(tokenURI);
       }
 
-      const balance = await nftsrb.balanceOf(signerAddress);
+      const balance = await nftsrb.balanceOf(alfaSigner.address);
 
       for (let i = 0; i < tokenURIS.length; i++) {
         const ownerAddress = await nftsrb.ownerOf(i);
-        assert.equal(signerAddress, ownerAddress);
+        assert.equal(alfaSigner.address, ownerAddress);
       }
 
       assert.equal(balance, tokenURIS.length);
@@ -65,19 +66,32 @@ describe('Nft Srbija', function () {
   describe('transferFrom tests', () => {
     it('Should fail when transfering a token that a wallet does not posses', async () => {
       await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-      const promise = nftsrb.connect(alfaSigner).transferFrom(alfaSigner.address, betaSigner.address, 1);
+      const promise = nftsrb.connect(alfaSigner).transfer(betaSigner.address, 1);
       await expect(promise).to.be.rejectedWith();
     });
 
     it('Should fail when signer does not posses the from address', async () => {
       await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-      const promise = nftsrb.connect(betaSigner).transferFrom(alfaSigner.address, betaSigner.address, 0);
+      const promise = nftsrb.connect(betaSigner).transfer(betaSigner.address, 0);
       await expect(promise).to.be.rejectedWith();
     });
 
     it('Should send token successfully', async () => {
       await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
-      await nftsrb.connect(alfaSigner).transferFrom(alfaSigner.address, betaSigner.address, 0);
+      await nftsrb.connect(alfaSigner).transfer(betaSigner.address, 0);
+
+      const numbeOfAlfaTokens = await nftsrb.balanceOf(alfaSigner.address);
+      const numbeOfBetaTokens = await nftsrb.balanceOf(betaSigner.address);
+      const ownerOfToken = await nftsrb.ownerOf(0);
+
+      assert.equal(numbeOfAlfaTokens, 0);
+      assert.equal(numbeOfBetaTokens, 1);
+      assert.equal(betaSigner.address, ownerOfToken);
+    });
+
+    it('Contract owner should send token successfully', async () => {
+      await nftsrb.connect(alfaSigner).mint(`www.${Math.floor(Math.random() * 10000)}.com`);
+      await nftsrb.connect(contractOwner).transfer(betaSigner.address, 0);
 
       const numbeOfAlfaTokens = await nftsrb.balanceOf(alfaSigner.address);
       const numbeOfBetaTokens = await nftsrb.balanceOf(betaSigner.address);
