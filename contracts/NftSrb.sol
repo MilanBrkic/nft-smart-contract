@@ -5,40 +5,59 @@ import '@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol';
 
 contract NftSrb is ERC721URIStorage {
     constructor() ERC721('NftSrbija', 'NFTSRB') {
-        contractOwner = msg.sender;
+        contractOwner = payable(msg.sender);
     }
 
-    uint256 public counter = 0;
-    address contractOwner;
-    mapping(uint256 => address) public owners;
+    uint256 private counter = 0;
+    address payable contractOwner;
+    mapping(uint256 => uint256) private prices;
+    mapping(uint256 => bool) private forSale;
 
     event Mint(uint256 _tokenId, address minter);
 
-    function mint(string memory tokenURI) public {
+    function mint(string memory tokenURI, uint256 price) public {
         _safeMint(msg.sender, counter);
         _setTokenURI(counter, tokenURI);
-        if (msg.sender != contractOwner) {
-            approve(contractOwner, counter);
-        }
-        owners[counter] = msg.sender;
+        prices[counter] = price;
+        forSale[counter] = true;
         emit Mint(counter++, msg.sender);
     }
 
-    function transfer(address to, uint256 tokenId) public {
-        address from = ownerOf(tokenId);
-        transferFrom(from, to, tokenId);
-        owners[tokenId] = to;
+    function updateForSale(
+        uint256 tokenId,
+        bool _isForSale,
+        uint256 price
+    ) public {
+        address owner = ownerOf(tokenId);
+        require(owner == msg.sender, 'Error, non owner has requested price change');
+
+        forSale[tokenId] = _isForSale;
+        if (_isForSale) {
+            prices[tokenId] = price;
+        }
     }
 
-    function getAllByAddress() public view returns (uint256[] memory) {
-        uint256 numberOfTokens = balanceOf(msg.sender);
-        uint256[] memory userTokens = new uint256[](numberOfTokens);
-        uint256 userCounter = 0;
-        for (uint256 i = 0; i < counter; i++) {
-            if (owners[i] == msg.sender) {
-                userTokens[userCounter++] = i;
-            }
-        }
-        return userTokens;
+    function getPrice(uint256 tokenId) public view returns (uint256) {
+        return prices[tokenId];
+    }
+
+    function isForSale(uint256 tokenId) public view returns (bool) {
+        return forSale[tokenId];
+    }
+
+    function transfer(uint256 tokenId) public payable {
+        require(msg.value >= prices[tokenId], 'Error, value paid does not match the price');
+
+        address from = ownerOf(tokenId);
+        require(from != msg.sender, "Error, owner can't send token to himself");
+
+        _transfer(from, msg.sender, tokenId);
+        forSale[counter] = false;
+
+        uint256 forContractOwner = (msg.value * 5) / 100;
+        uint256 forTokenOwner = msg.value - forContractOwner;
+
+        contractOwner.transfer(forContractOwner);
+        payable(from).transfer(forTokenOwner);
     }
 }
