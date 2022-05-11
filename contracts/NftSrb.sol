@@ -54,7 +54,7 @@ contract NftSrb is ERC721URIStorage {
         require(from != msg.sender, "Error, owner can't send token to himself");
 
         _transfer(from, msg.sender, tokenId);
-        forSale[counter] = false;
+        forSale[tokenId] = false;
 
         uint256 forContractOwner = (msg.value * 5) / 100;
         uint256 forTokenOwner = msg.value - forContractOwner;
