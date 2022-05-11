@@ -45,7 +45,7 @@ contract NftSrb is ERC721URIStorage {
         return forSale[tokenId];
     }
 
-    function transfer(uint256 tokenId) public payable {
+    function buy(uint256 tokenId) public payable {
         require(msg.value >= prices[tokenId], 'Error, value paid does not match the price');
 
         address from = ownerOf(tokenId);
