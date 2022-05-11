@@ -48,6 +48,7 @@ contract NftSrb is ERC721URIStorage {
     function buy(uint256 tokenId) public payable {
         require(forSale[tokenId] == true, 'Error, token not for sale');
         require(msg.value >= prices[tokenId], 'Error, value paid does not match the price');
+        require(msg.sender.balance >= msg.value, 'Error, insufficient balance');
 
         address from = ownerOf(tokenId);
         require(from != msg.sender, "Error, owner can't send token to himself");
