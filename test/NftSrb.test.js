@@ -38,11 +38,13 @@ describe('Nft Srbija', function () {
       assert.equal(balance, 1);
       const receivedTokenUri = await nftsrb.tokenURI(0);
       const receivedPrice = await nftsrb.getPrice(0);
+      const receivedForSale = await nftsrb.isForSale(0);
 
       assert.equal(mintedToken.from, alfaSigner.address);
       assert.equal(mintedToken.to, deployedAddress);
       assert.equal(receivedTokenUri, tokenUri);
       assert.equal(receivedPrice, price);
+      assert.equal(receivedForSale, true);
     });
 
     it('Should mint three tokens', async () => {
@@ -60,13 +62,56 @@ describe('Nft Srbija', function () {
       for (let i = 0; i < tokens.length; i++) {
         const ownerAddress = await nftsrb.ownerOf(i);
         const receivedPrice = await nftsrb.getPrice(i);
+        const receivedForSale = await nftsrb.isForSale(i);
+
         assert.equal(alfaSigner.address, ownerAddress);
         assert.equal(receivedPrice, tokens[i].price);
+        assert.equal(receivedForSale, true);
       }
 
       assert.equal(balance, tokens.length);
     });
   });
+
+  describe("updateForSale function", ()=>{
+    it("Should set for sale and update the price", async()=>{
+      const tokenUri = 'www.SomeTokenUrl.com';
+      const price = 100;
+      const newPrice = 200;
+      await nftsrb.connect(alfaSigner).mint(tokenUri, price);
+
+      await nftsrb.connect(alfaSigner).updateForSale(0, true, newPrice);
+
+      const receivedForSale = await nftsrb.isForSale(0);
+      const receivedPrice = await nftsrb.getPrice(0);
+
+      assert.equal(receivedForSale, true);
+      assert.equal(receivedPrice, newPrice);
+    })
+    it("Should set not for sale and not update the price", async()=>{
+      const tokenUri = 'www.SomeTokenUrl.com';
+      const price = 100;
+      const newPrice = 200;
+      await nftsrb.connect(alfaSigner).mint(tokenUri, price);
+
+      await nftsrb.connect(alfaSigner).updateForSale(0, false, newPrice);
+
+      const receivedForSale = await nftsrb.isForSale(0);
+      const receivedPrice = await nftsrb.getPrice(0);
+
+      assert.equal(receivedForSale, false);
+      assert.equal(receivedPrice, price);
+    })
+    it("Should throw an error when non owner tries to call the function", async()=>{
+      const tokenUri = 'www.SomeTokenUrl.com';
+      const price = 100;
+      const newPrice = 200;
+      await nftsrb.connect(alfaSigner).mint(tokenUri, price);
+
+      const promise =  nftsrb.connect(betaSigner).updateForSale(0, true, newPrice);
+      await expect(promise).to.be.rejectedWith();
+    })
+  })
 
   describe.skip('transferFrom tests', () => {
     it('Should fail when transfering a token that a wallet does not posses', async () => {
