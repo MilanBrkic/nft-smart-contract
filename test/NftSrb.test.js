@@ -32,34 +32,39 @@ describe('Nft Srbija', function () {
   describe('Minting process', () => {
     it('Should mint a token', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
-      const mintedToken = await nftsrb.connect(alfaSigner).mint(tokenUri, 100);
+      const price = 100;
+      const mintedToken = await nftsrb.connect(alfaSigner).mint(tokenUri, price);
       const balance = await nftsrb.balanceOf(alfaSigner.address);
       assert.equal(balance, 1);
       const receivedTokenUri = await nftsrb.tokenURI(0);
+      const receivedPrice = await nftsrb.getPrice(0);
 
       assert.equal(mintedToken.from, alfaSigner.address);
       assert.equal(mintedToken.to, deployedAddress);
       assert.equal(receivedTokenUri, tokenUri);
+      assert.equal(receivedPrice, price);
     });
 
     it('Should mint three tokens', async () => {
-      const tokenURIS = [
-        `www.${Math.floor(Math.random() * 10000)}.com`,
-        `www.${Math.floor(Math.random() * 10000)}.com`,
-        `www.${Math.floor(Math.random() * 10000)}.com`
+      const tokens = [
+        {uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 100},
+        {uri:`www.${Math.floor(Math.random() * 10000)}.com`, price: 200},
+        {uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 300}
       ];
-      for (const tokenURI of tokenURIS) {
-        await nftsrb.connect(alfaSigner).mint(tokenURI, 100);
+      for (const token of tokens) {
+        await nftsrb.connect(alfaSigner).mint(token.uri, token.price);
       }
 
       const balance = await nftsrb.balanceOf(alfaSigner.address);
 
-      for (let i = 0; i < tokenURIS.length; i++) {
+      for (let i = 0; i < tokens.length; i++) {
         const ownerAddress = await nftsrb.ownerOf(i);
+        const receivedPrice = await nftsrb.getPrice(i);
         assert.equal(alfaSigner.address, ownerAddress);
+        assert.equal(receivedPrice, tokens[i].price);
       }
 
-      assert.equal(balance, tokenURIS.length);
+      assert.equal(balance, tokens.length);
     });
   });
 
