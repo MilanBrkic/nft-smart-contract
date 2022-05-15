@@ -7,7 +7,7 @@ describe('Nft Srbija', function () {
   let NftSrb;
   let nftsrb;
   let accounts;
-  let deployedAddress
+  let deployedAddress;
   let alfaSigner;
   let betaSigner;
   let contractOwner;
@@ -48,9 +48,9 @@ describe('Nft Srbija', function () {
 
     it('Should mint three tokens', async () => {
       const tokens = [
-        {uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 100},
-        {uri:`www.${Math.floor(Math.random() * 10000)}.com`, price: 200},
-        {uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 300}
+        { uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 100 },
+        { uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 200 },
+        { uri: `www.${Math.floor(Math.random() * 10000)}.com`, price: 300 }
       ];
       for (const token of tokens) {
         await nftsrb.connect(alfaSigner).mint(token.uri, token.price);
@@ -72,8 +72,8 @@ describe('Nft Srbija', function () {
     });
   });
 
-  describe("updateForSale function", ()=>{
-    it("Should set for sale and update the price", async()=>{
+  describe('updateForSale function', () => {
+    it('Should set for sale and update the price', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       const newPrice = 200;
@@ -86,8 +86,8 @@ describe('Nft Srbija', function () {
 
       assert.equal(receivedForSale, true);
       assert.equal(receivedPrice, newPrice);
-    })
-    it("Should set not for sale and not update the price", async()=>{
+    });
+    it('Should set not for sale and not update the price', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       const newPrice = 200;
@@ -100,29 +100,29 @@ describe('Nft Srbija', function () {
 
       assert.equal(receivedForSale, false);
       assert.equal(receivedPrice, price);
-    })
-    it("Should throw an error when non owner tries to call the function", async()=>{
+    });
+    it('Should throw an error when non owner tries to call the function', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       const newPrice = 200;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      const promise =  nftsrb.connect(betaSigner).updateForSale(0, true, newPrice);
+      const promise = nftsrb.connect(betaSigner).updateForSale(0, true, newPrice);
       await expect(promise).to.be.rejectedWith();
-    })
-  })
+    });
+  });
 
   describe('buy tests', () => {
-    it("Should successfully buy the token", async()=>{
+    it('Should successfully buy the token', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
-      const price = ethers.utils.parseEther("1");
+      const price = ethers.utils.parseEther('1');
       const minterBalanceBefore = await alfaSigner.getBalance();
       const buyerBalanceBefore = await betaSigner.getBalance();
       const constractOwnerBalanceBefore = await contractOwner.getBalance();
 
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      await nftsrb.connect(betaSigner).buy(0, {value: price });
+      await nftsrb.connect(betaSigner).buy(0, { value: price });
 
       const ownerOfToken = await nftsrb.ownerOf(0);
       const isForSale = await nftsrb.isForSale(0);
@@ -133,41 +133,41 @@ describe('Nft Srbija', function () {
 
       assert.equal(ownerOfToken, betaSigner.address);
       assert.equal(isForSale, false);
-    
+
       expect(minterBalanceAfter).to.be.gt(minterBalanceBefore);
       expect(constractOwnerBalanceAfter).to.be.gt(constractOwnerBalanceBefore);
       expect(buyerBalanceAfter).to.be.lt(buyerBalanceBefore);
-    })
-    it("Should throw an error when owner of the token is the buyer", async()=>{
+    });
+    it('Should throw an error when owner of the token is the buyer', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      const promise =  nftsrb.connect(alfaSigner).buy(0, {value: price });
+      const promise = nftsrb.connect(alfaSigner).buy(0, { value: price });
       await expect(promise).to.be.rejectedWith();
-    })
-    it("Should throw an error for not matching the asking price", async()=>{
+    });
+    it('Should throw an error for not matching the asking price', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      const promise =  nftsrb.connect(betaSigner).buy(0, {value: price - 1});
+      const promise = nftsrb.connect(betaSigner).buy(0, { value: price - 1 });
       await expect(promise).to.be.rejectedWith();
-    })
-    it("Should throw an error for buying a token that is not for sale", async()=>{
+    });
+    it('Should throw an error for buying a token that is not for sale', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
       await nftsrb.connect(alfaSigner).updateForSale(0, false, price);
-      const promise =  nftsrb.connect(betaSigner).buy(0, {value: price});
+      const promise = nftsrb.connect(betaSigner).buy(0, { value: price });
 
       await expect(promise).to.be.rejectedWith();
-    })
-    it("Should throw an error for nonexistant token", async()=>{
-      const promise =  nftsrb.connect(betaSigner).buy(0, {value: 100});
+    });
+    it('Should throw an error for nonexistant token', async () => {
+      const promise = nftsrb.connect(betaSigner).buy(0, { value: 100 });
 
       await expect(promise).to.be.rejectedWith();
-    })  
+    });
   });
 });
