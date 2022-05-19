@@ -13,17 +13,18 @@ contract NftSrb is ERC721URIStorage {
     mapping(uint256 => uint256) private prices;
     mapping(uint256 => bool) private forSale;
 
-    event Mint(uint256 _tokenId, address minter);
+    event Mint(uint256 _tokenId, string tokenURI, address minter);
+    event TransferNftSrb(address from, address to, uint256 tokenId, string tokenURI);
 
     function mint(string memory tokenURI, uint256 price) public {
         _safeMint(msg.sender, counter);
         _setTokenURI(counter, tokenURI);
         prices[counter] = price;
         forSale[counter] = true;
-        emit Mint(counter++, msg.sender);
+        emit Mint(counter++, tokenURI, msg.sender);
     }
 
-    function updateForSale(
+    function update(
         uint256 tokenId,
         bool _isForSale,
         uint256 price
@@ -54,6 +55,9 @@ contract NftSrb is ERC721URIStorage {
         require(from != msg.sender, "Error, owner can't send token to himself");
 
         _transfer(from, msg.sender, tokenId);
+
+        emit TransferNftSrb(from, msg.sender, tokenId, tokenURI(tokenId));
+
         forSale[tokenId] = false;
 
         uint256 forContractOwner = (msg.value * 5) / 100;

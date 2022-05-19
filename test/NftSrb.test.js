@@ -72,14 +72,14 @@ describe('Nft Srbija', function () {
     });
   });
 
-  describe('updateForSale function', () => {
+  describe('update function', () => {
     it('Should set for sale and update the price', async () => {
       const tokenUri = 'www.SomeTokenUrl.com';
       const price = 100;
       const newPrice = 200;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      await nftsrb.connect(alfaSigner).updateForSale(0, true, newPrice);
+      await nftsrb.connect(alfaSigner).update(0, true, newPrice);
 
       const receivedForSale = await nftsrb.isForSale(0);
       const receivedPrice = await nftsrb.getPrice(0);
@@ -93,7 +93,7 @@ describe('Nft Srbija', function () {
       const newPrice = 200;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      await nftsrb.connect(alfaSigner).updateForSale(0, false, newPrice);
+      await nftsrb.connect(alfaSigner).update(0, false, newPrice);
 
       const receivedForSale = await nftsrb.isForSale(0);
       const receivedPrice = await nftsrb.getPrice(0);
@@ -107,7 +107,7 @@ describe('Nft Srbija', function () {
       const newPrice = 200;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      const promise = nftsrb.connect(betaSigner).updateForSale(0, true, newPrice);
+      const promise = nftsrb.connect(betaSigner).update(0, true, newPrice);
       await expect(promise).to.be.rejectedWith();
     });
   });
@@ -159,7 +159,7 @@ describe('Nft Srbija', function () {
       const price = 100;
       await nftsrb.connect(alfaSigner).mint(tokenUri, price);
 
-      await nftsrb.connect(alfaSigner).updateForSale(0, false, price);
+      await nftsrb.connect(alfaSigner).update(0, false, price);
       const promise = nftsrb.connect(betaSigner).buy(0, { value: price });
 
       await expect(promise).to.be.rejectedWith();
