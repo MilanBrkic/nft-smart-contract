@@ -15,6 +15,7 @@ contract NftSrb is ERC721URIStorage {
 
     event Mint(uint256 _tokenId, string tokenURI, address minter);
     event TransferNftSrb(address from, address to, uint256 tokenId, string tokenURI);
+    event NftChanged(uint256 tokenId, bool isForSale, uint256 price, address owner);
 
     function mint(string memory tokenURI, uint256 price) public {
         _safeMint(msg.sender, counter);
@@ -36,6 +37,8 @@ contract NftSrb is ERC721URIStorage {
         if (_isForSale) {
             prices[tokenId] = price;
         }
+
+        emit NftChanged(tokenId, _isForSale, price, owner);
     }
 
     function getPrice(uint256 tokenId) public view returns (uint256) {
